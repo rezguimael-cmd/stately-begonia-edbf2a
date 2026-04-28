@@ -786,28 +786,33 @@
       </div>
       <div class="contact-form-wrap reveal">
         <p class="form-title">Votre demande de devis</p>
-        <form id="contactForm" onsubmit="handleSubmit(event)">
+        <form id="contactForm" name="devis" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="handleSubmit(event)">
+          <input type="hidden" name="form-name" value="devis" />
+          <input type="hidden" name="subject" value="Nouvelle demande de devis - TM Riviera" />
+          <p style="display:none">
+            <label>Ne pas remplir : <input name="bot-field" /></label>
+          </p>
           <div class="form-row">
             <div class="form-grp">
               <label>Prénom</label>
-              <input type="text" placeholder="Jean" required />
+              <input type="text" name="prenom" placeholder="Jean" required />
             </div>
             <div class="form-grp">
               <label>Nom</label>
-              <input type="text" placeholder="Dupont" required />
+              <input type="text" name="nom" placeholder="Dupont" required />
             </div>
           </div>
           <div class="form-grp">
             <label>Email</label>
-            <input type="email" placeholder="jean.dupont@email.com" required />
+            <input type="email" name="email" placeholder="jean.dupont@email.com" required />
           </div>
           <div class="form-grp">
             <label>Téléphone</label>
-            <input type="tel" placeholder="06 00 00 00 00" />
+            <input type="tel" name="telephone" placeholder="06 00 00 00 00" />
           </div>
           <div class="form-grp">
             <label>Type de prestation</label>
-            <select>
+            <select name="prestation">
               <option value="">Sélectionnez...</option>
               <option>Nettoyage résidentiel</option>
               <option>Remise en état après location</option>
@@ -820,7 +825,7 @@
           </div>
           <div class="form-grp">
             <label>Votre message</label>
-            <textarea placeholder="Décrivez votre bien, vos besoins et vos disponibilités..."></textarea>
+            <textarea name="message" placeholder="Décrivez votre bien, vos besoins et vos disponibilités..."></textarea>
           </div>
           <button type="submit" class="form-btn">Envoyer ma demande</button>
           <div class="form-success" id="successMsg">Merci ! Nous reviendrons vers vous sous 24h.</div>
@@ -886,10 +891,28 @@
 
   function handleSubmit(e) {
     e.preventDefault();
+    const form = e.target;
     const msg = document.getElementById('successMsg');
-    msg.style.display = 'block';
-    e.target.reset();
-    setTimeout(() => msg.style.display = 'none', 5000);
+    const data = new URLSearchParams(new FormData(form)).toString();
+
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: data,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        msg.style.display = 'block';
+        form.reset();
+        setTimeout(() => (msg.style.display = 'none'), 5000);
+      })
+      .catch(() => {
+        msg.style.display = 'block';
+        msg.style.background = '#fef2f2';
+        msg.style.borderColor = '#fca5a5';
+        msg.style.color = '#b91c1c';
+        msg.textContent = "Une erreur s'est produite. Merci de réessayer ou de nous contacter directement.";
+      });
   }
 </script>
 </body>
